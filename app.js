@@ -1,4 +1,6 @@
+// --------------------
 // Recipe Data
+// --------------------
 const recipes = [
   {
     id: 1,
@@ -66,10 +68,20 @@ const recipes = [
   },
 ];
 
+// --------------------
 // DOM Selection
+// --------------------
 const recipeContainer = document.querySelector("#recipe-container");
 
+// --------------------
+// State
+// --------------------
+let currentFilter = "all";
+let currentSort = null;
+
+// --------------------
 // Create Recipe Card
+// --------------------
 const createRecipeCard = (recipe) => {
   return `
     <div class="recipe-card" data-id="${recipe.id}">
@@ -85,12 +97,78 @@ const createRecipeCard = (recipe) => {
   `;
 };
 
+// --------------------
 // Render Recipes
+// --------------------
 const renderRecipes = (recipesArray) => {
   recipeContainer.innerHTML = recipesArray
     .map((recipe) => createRecipeCard(recipe))
     .join("");
 };
 
-// Initialize App
-renderRecipes(recipes);
+// --------------------
+// Pure Filter Function
+// --------------------
+const filterRecipes = (recipesArray, filter) => {
+  if (filter === "easy" || filter === "medium" || filter === "hard") {
+    return recipesArray.filter(
+      (recipe) => recipe.difficulty === filter
+    );
+  }
+
+  if (filter === "quick") {
+    return recipesArray.filter((recipe) => recipe.time < 30);
+  }
+
+  return recipesArray;
+};
+
+// --------------------
+// Pure Sort Function
+// --------------------
+const sortRecipes = (recipesArray, sortType) => {
+  const copy = [...recipesArray];
+
+  if (sortType === "name") {
+    return copy.sort((a, b) =>
+      a.title.localeCompare(b.title)
+    );
+  }
+
+  if (sortType === "time") {
+    return copy.sort((a, b) => a.time - b.time);
+  }
+
+  return copy;
+};
+
+// --------------------
+// Central Update Function
+// --------------------
+const updateDisplay = () => {
+  let updatedRecipes = filterRecipes(recipes, currentFilter);
+  updatedRecipes = sortRecipes(updatedRecipes, currentSort);
+  renderRecipes(updatedRecipes);
+};
+
+// --------------------
+// Event Listeners
+// --------------------
+document.querySelectorAll("[data-filter]").forEach((button) => {
+  button.addEventListener("click", () => {
+    currentFilter = button.dataset.filter;
+    updateDisplay();
+  });
+});
+
+document.querySelectorAll("[data-sort]").forEach((button) => {
+  button.addEventListener("click", () => {
+    currentSort = button.dataset.sort;
+    updateDisplay();
+  });
+});
+
+// --------------------
+// Initial Load
+// --------------------
+updateDisplay();
