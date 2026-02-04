@@ -27,13 +27,22 @@ main {
   padding: 1rem;
 }
 
+/* Search */
+#search {
+  width: 100%;
+  padding: 0.6rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
 /* Controls */
 .controls {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .controls button {
@@ -47,6 +56,12 @@ main {
 
 .controls button:hover {
   background: #764ba2;
+}
+
+/* Counter */
+#counter {
+  margin-bottom: 1rem;
+  font-weight: bold;
 }
 
 /* Recipe Grid */
@@ -91,29 +106,15 @@ main {
 .medium { background: #fff3cd; color: #856404; }
 .hard { background: #f8d7da; color: #721c24; }
 
-/* Actions */
-.recipe-actions {
-  margin-top: 1rem;
-  display: flex;
-  gap: 0.5rem;
-}
-
-.recipe-actions button {
-  padding: 0.3rem 0.6rem;
-  border-radius: 5px;
-  border: none;
-  background: #667eea;
-  color: white;
+/* Favorite */
+.favorite {
+  font-size: 1.3rem;
   cursor: pointer;
+  float: right;
+  opacity: 0.5;
 }
 
-/* Expandable */
-.recipe-details {
-  display: none;
-  margin-top: 1rem;
-}
-
-.recipe-details ul {
-  margin-left: 1.2rem;
-  margin-top: 0.5rem;
+.favorite.active {
+  color: red;
+  opacity: 1;
 }

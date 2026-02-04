@@ -10,14 +10,6 @@
       difficulty: "easy",
       description: "A quick and creamy pasta.",
       ingredients: ["Pasta", "Cream", "Garlic", "Cheese"],
-      steps: [
-        "Boil pasta",
-        "Prepare sauce",
-        {
-          step: "Combine",
-          substeps: ["Mix pasta with sauce", "Add cheese"]
-        }
-      ]
     },
     {
       id: 2,
@@ -26,20 +18,6 @@
       difficulty: "medium",
       description: "Rich Indian curry.",
       ingredients: ["Chicken", "Onion", "Spices"],
-      steps: [
-        "Marinate chicken",
-        {
-          step: "Cook curry",
-          substeps: [
-            "Fry onions",
-            "Add spices",
-            {
-              step: "Simmer",
-              substeps: ["Add chicken", "Cook till tender"]
-            }
-          ]
-        }
-      ]
     },
     {
       id: 3,
@@ -48,7 +26,6 @@
       difficulty: "easy",
       description: "Fresh veggie salad.",
       ingredients: ["Lettuce", "Tomato", "Cucumber"],
-      steps: ["Chop vegetables", "Mix and serve"]
     },
     {
       id: 4,
@@ -57,8 +34,7 @@
       difficulty: "hard",
       description: "Creamy beef dish.",
       ingredients: ["Beef", "Mushroom", "Cream"],
-      steps: ["Cook beef", "Prepare sauce", "Combine"]
-    }
+    },
   ];
 
   /* =========================
@@ -66,80 +42,79 @@
   ========================== */
   let currentFilter = "all";
   let currentSort = null;
+  let searchTerm = "";
+  let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
   const recipeContainer = document.querySelector("#recipe-container");
-
-  /* =========================
-     RECURSIVE STEPS
-  ========================== */
-  const renderSteps = (steps) => `
-    <ul>
-      ${steps.map(step =>
-        typeof step === "string"
-          ? `<li>${step}</li>`
-          : `<li>${step.step}${renderSteps(step.substeps)}</li>`
-      ).join("")}
-    </ul>
-  `;
+  const counter = document.querySelector("#counter");
+  const searchInput = document.querySelector("#search");
 
   /* =========================
      CARD TEMPLATE
   ========================== */
-  const createRecipeCard = (recipe) => `
-    <div class="recipe-card" data-id="${recipe.id}">
-      <h3>${recipe.title}</h3>
+  const createRecipeCard = (r) => `
+    <div class="recipe-card">
+      <span
+        class="favorite ${favorites.includes(r.id) ? "active" : ""}"
+        data-fav="${r.id}"
+      >❤️</span>
+
+      <h3>${r.title}</h3>
+
       <div class="recipe-meta">
-        <span>⏱️ ${recipe.time} min</span>
-        <span class="difficulty ${recipe.difficulty}">${recipe.difficulty}</span>
-      </div>
-      <p>${recipe.description}</p>
-
-      <div class="recipe-actions">
-        <button data-action="steps">Show Steps</button>
-        <button data-action="ingredients">Show Ingredients</button>
+        <span>⏱️ ${r.time} min</span>
+        <span class="difficulty ${r.difficulty}">
+          ${r.difficulty}
+        </span>
       </div>
 
-      <div class="recipe-details steps">
-        <h4>Steps</h4>
-        ${renderSteps(recipe.steps)}
-      </div>
-
-      <div class="recipe-details ingredients">
-        <h4>Ingredients</h4>
-        <ul>
-          ${recipe.ingredients.map(i => `<li>${i}</li>`).join("")}
-        </ul>
-      </div>
+      <p>${r.description}</p>
     </div>
   `;
 
   /* =========================
-     FILTER & SORT
+     FILTER / SORT / SEARCH
   ========================== */
-  const filterRecipes = (list) => {
-    if (currentFilter === "quick") return list.filter(r => r.time < 30);
-    if (["easy","medium","hard"].includes(currentFilter))
-      return list.filter(r => r.difficulty === currentFilter);
-    return list;
-  };
+  const applyAll = (list) => {
+    let result = [...list];
 
-  const sortRecipes = (list) => {
-    const copy = [...list];
-    if (currentSort === "name")
-      return copy.sort((a,b) => a.title.localeCompare(b.title));
-    if (currentSort === "time")
-      return copy.sort((a,b) => a.time - b.time);
-    return copy;
-  };
+    if (currentFilter === "favorites") {
+      result = result.filter(r => favorites.includes(r.id));
+    } else if (["easy","medium","hard"].includes(currentFilter)) {
+      result = result.filter(r => r.difficulty === currentFilter);
+    } else if (currentFilter === "quick") {
+      result = result.filter(r => r.time < 30);
+    }
 
-  const updateDisplay = () => {
-    let updated = filterRecipes(recipes);
-    updated = sortRecipes(updated);
-    recipeContainer.innerHTML = updated.map(createRecipeCard).join("");
+    if (searchTerm) {
+      result = result.filter(r =>
+        r.title.toLowerCase().includes(searchTerm) ||
+        r.ingredients.join(" ").toLowerCase().includes(searchTerm)
+      );
+    }
+
+    if (currentSort === "name") {
+      result.sort((a,b) => a.title.localeCompare(b.title));
+    }
+
+    if (currentSort === "time") {
+      result.sort((a,b) => a.time - b.time);
+    }
+
+    return result;
   };
 
   /* =========================
-     EVENTS (DELEGATION)
+     RENDER
+  ========================== */
+  const updateDisplay = () => {
+    const visible = applyAll(recipes);
+    recipeContainer.innerHTML = visible.map(createRecipeCard).join("");
+    counter.textContent = `Showing ${visible.length} of ${recipes.length} recipes`;
+  };
+
+  /* =========================
+     EVENTS
   ========================== */
   document.addEventListener("click", (e) => {
     if (e.target.dataset.filter) {
@@ -152,12 +127,27 @@
       updateDisplay();
     }
 
-    if (e.target.dataset.action) {
-      const card = e.target.closest(".recipe-card");
-      const section = card.querySelector("." + e.target.dataset.action);
-      section.style.display =
-        section.style.display === "block" ? "none" : "block";
+    if (e.target.dataset.fav) {
+      const id = Number(e.target.dataset.fav);
+      favorites = favorites.includes(id)
+        ? favorites.filter(f => f !== id)
+        : [...favorites, id];
+
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+      updateDisplay();
     }
+  });
+
+  /* =========================
+     SEARCH (DEBOUNCE)
+  ========================== */
+  let debounceTimer;
+  searchInput.addEventListener("input", (e) => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      searchTerm = e.target.value.toLowerCase();
+      updateDisplay();
+    }, 300);
   });
 
   /* =========================

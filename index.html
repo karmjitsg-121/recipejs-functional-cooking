@@ -14,6 +14,13 @@
   </header>
 
   <main>
+    <!-- Search -->
+    <input
+      type="text"
+      id="search"
+      placeholder="Search by title or ingredients..."
+    />
+
     <!-- Controls -->
     <div class="controls">
       <div class="filters">
@@ -21,19 +28,21 @@
         <button data-filter="easy">Easy</button>
         <button data-filter="medium">Medium</button>
         <button data-filter="hard">Hard</button>
-        <button data-filter="quick">Quick (&lt; 30 min)</button>
+        <button data-filter="quick">Quick (&lt; 30)</button>
+        <button data-filter="favorites">Favorites ❤️</button>
       </div>
 
       <div class="sort">
         <button data-sort="name">Name (A–Z)</button>
-        <button data-sort="time">Time (Fastest)</button>
+        <button data-sort="time">Time</button>
       </div>
     </div>
 
+    <!-- Counter -->
+    <p id="counter"></p>
+
     <!-- Recipes -->
-    <div id="recipe-container">
-      <!-- Rendered by JS -->
-    </div>
+    <div id="recipe-container"></div>
   </main>
 
   <script src="app.js"></script>
